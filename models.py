@@ -58,7 +58,7 @@ async def init_database():
     # just to be sure we clear the db before
     metadata.drop_all(engine)
     metadata.create_all(engine)
-    time = datetime.datetime.now() - datetime.timedelta(hours=3)
+    time = datetime.datetime.now() - datetime.timedelta(minutes=60)
     await Website.objects.create(name='东方网', last_crawl_time=time)
     await Website.objects.create(name='人民网', last_crawl_time=time)
     await Website.objects.create(name='参考消息网', last_crawl_time=time)

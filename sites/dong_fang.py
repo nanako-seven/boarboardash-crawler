@@ -81,7 +81,8 @@ def analyze_page(news: Dict) -> News:
             [p.string for p in detail.find_all('p') if p.string])
         news['image_urls'] = [i.get('src') for i in detail.find_all('img')]
         return News(**news)
-    except:
+    except Exception as e:
+        print(e)
         return None
 
 

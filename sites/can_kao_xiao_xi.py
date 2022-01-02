@@ -50,6 +50,7 @@ def get_news_since(driver: webdriver.Firefox, time: datetime) -> list[News]:
             break
         i += 1
     r = [analyze_page(x) for x in news[:i]]
+    r = [x for x in r if x]
     return r
 
 
@@ -57,31 +58,34 @@ def analyze_page(news: Dict) -> News:
     '''
     分析一个具体的新闻网页
     '''
-    url = news['url']
-    req = requests.get(url)
-    news['raw'] = req.content
-    news['encoding'] = req.encoding
+    try:
+        url = news['url']
+        req = requests.get(url)
+        news['raw'] = req.content
+        news['encoding'] = req.encoding
 
-    news['image_urls'] = []
-    html = req.text
-    soup = BeautifulSoup(html, 'lxml')
-
-    abstract = soup.find(class_='articleAbs').span.string
-    news['content'] = [abstract]
-    n_pages = 1
-    page = soup.find(class_='page')
-    if page:
-        n_pages = len(page.find_all('li')) - 2
-    analyze_page_2(soup, news)
-    for i in range(1, n_pages):
-        url2 = url[:-6] + f'_{i+1}.shtml'
-        req = requests.get(url2)
+        news['image_urls'] = []
         html = req.text
         soup = BeautifulSoup(html, 'lxml')
-        analyze_page_2(soup, news)
-    news['content'] = '\n'.join(news['content'])
 
-    return News(**news)
+        abstract = soup.find(class_='articleAbs').span.string
+        news['content'] = [abstract]
+        n_pages = 1
+        page = soup.find(class_='page')
+        if page:
+            n_pages = len(page.find_all('li')) - 2
+        analyze_page_2(soup, news)
+        for i in range(1, n_pages):
+            url2 = url[:-6] + f'_{i+1}.shtml'
+            req = requests.get(url2)
+            html = req.text
+            soup = BeautifulSoup(html, 'lxml')
+            analyze_page_2(soup, news)
+        news['content'] = '\n'.join(news['content'])
+
+        return News(**news)
+    except:
+        return None
 
 
 def analyze_page_2(soup: BeautifulSoup, news: Dict):
