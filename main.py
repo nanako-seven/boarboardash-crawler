@@ -1,62 +1,56 @@
-import requests
+import aiohttp
 import sites
 from selenium import webdriver
 from models import Website, News, Image
 import asyncio
+from api_models import NewsHook, ImageHook
+import time
+from config import news_hook_url, image_hook_url
+import traceback
+import sys
 
 
-# site_models: dict[sites.SupportedSites, model.Site] = {
-#     sites.SupportedSites.DONG_FANG: model.Site.select().where(model.Site.id == 1).get()
-# }
+driver = webdriver.Edge()
 
 
-# class Crawler:
-#     def __init__(self):
-#         self.driver = webdriver.Edge()
+async def crawl():
 
-#     def start(self, site: sites.SupportedSites):
-#         s = site_models[site]
-#         news = sites.get_news_since(site, self.driver, s.latest)
-#         if news:
-#             s.latest = news[0].time
-#             s.save()
-#         pages = []
-#         images = []
-#         for i in news:
-#             page = model.Page.create(
-#                 url=i.url, title=i.title, content=i.content, encoding=i.encoding, raw=i.raw, date=i.time, site=s)
-#             pages.append(page.id)
-#             for j in i.images:
-#                 img = model.Image.create(src_page=page, url=j)
-#                 images.append(img.id)
-#         for i in model.Subscriber.select():
-#             i: model.Subscriber
-#             requests.post(i.url, json={'page_ids': pages, 'image_ids': images})
+    news_hooks = []
+    image_hooks = []
+    for w in sites.SupportedSites:
+        website = await Website.objects.get(Website.name == sites.website_names[w])
+        news = sites.get_news_since(w, driver, website.last_crawl_time)
+
+        if news:
+            website.last_crawl_time = news[0].time
+            await website.update()
+        for i in news:
+            page = await News.objects.create(
+                url=i.url, title=i.title, content=i.content, encoding=i.encoding, raw=i.raw, time=i.time, website=website, category=i.category)
+            news_hooks.append(NewsHook(id=page.id, url=page.url, title=page.title,
+                              content=page.content, category=page.category, date=str(page.time.date())))
+
+            for j in i.image_urls:
+                img = await Image.objects.create(news=page, url=j)
+                image_hooks.append(ImageHook(id=img.id, url=img.url))
+    async with aiohttp.ClientSession() as session:
+        for i in news_hooks:
+            await session.post(news_hook_url, json=dict(i))
+
+        for i in image_hooks:
+            await session.post(image_hook_url, json=dict(i))
 
 
-# if __name__ == '__main__':
-#     c = Crawler()
-#     c.start(sites.SupportedSites.DONGFANG)
+def main():
+    # asyncio.run(crawl())
+    while True:
+        try:
+            asyncio.run(crawl())
+        except Exception as e:
+            traceback.print_exc(file=sys.stderr)
+        # 每隔一小时爬取一次
+        time.sleep(3600)
 
-async def test():
-    driver = webdriver.Edge()
-    website = await Website.objects.get(Website.name == '参考消息网')
-    news = sites.get_news_since(
-        sites.SupportedSites.CAN_KAO_XIAO_XI, driver, website.last_crawl_time)
 
-    if news:
-        website.last_crawl_time = news[0].time
-        await website.update()
-    pages = []
-    images = []
-    for i in news:
-        page = await News.objects.create(
-            url=i.url, title=i.title, content=i.content, encoding=i.encoding, raw=i.raw, time=i.time, website=website, category=i.category)
-        pages.append(page.id)
-        for j in i.image_urls:
-            img = await Image.objects.create(news=page, url=j)
-            images.append(img.id)
-
-loop = asyncio.get_event_loop()
-loop.run_until_complete(test())
-loop.close()
+if __name__ == '__main__':
+    main()

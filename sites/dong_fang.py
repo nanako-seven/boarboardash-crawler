@@ -29,6 +29,8 @@ def analyze_html(html: str) -> list[Any]:
         info = {}
         a = li.find('a')
         info['category'] = get_tag(a.string)
+        if info['category'] == '图片':
+            continue
         a: Tag = a.next_sibling
         # news.title = a.string
         info['url'] = a.get('href')
@@ -58,6 +60,7 @@ def get_news_since(driver: webdriver.Firefox, time: datetime) -> list[News]:
             break
         i += 1
     r = [analyze_page(x) for x in news[:i]]
+    r = [x for x in r if x]
     return r
 
 
@@ -65,18 +68,21 @@ def analyze_page(news: Dict) -> News:
     '''
     分析一个具体的新闻网页
     '''
-    req = requests.get(news['url'])
-    news['raw'] = req.content
-    news['encoding'] = req.encoding
-    html = req.text
-    soup = BeautifulSoup(html, 'lxml')
-    article = soup.find(class_='article')
-    news['title'] = article.find('h1').string
-    detail = article.find(class_='detail')
-    news['content'] = '\n'.join(
-        [p.string for p in detail.find_all('p') if p.string])
-    news['image_urls'] = [i.get('src') for i in detail.find_all('img')]
-    return News(**news)
+    try:
+        req = requests.get(news['url'])
+        news['raw'] = req.content
+        news['encoding'] = req.encoding
+        html = req.text
+        soup = BeautifulSoup(html, 'lxml')
+        article = soup.find(class_='article')
+        news['title'] = article.find('h1').string
+        detail = article.find(class_='detail')
+        news['content'] = '\n'.join(
+            [p.string for p in detail.find_all('p') if p.string])
+        news['image_urls'] = [i.get('src') for i in detail.find_all('img')]
+        return News(**news)
+    except:
+        return None
 
 
 if __name__ == '__main__':

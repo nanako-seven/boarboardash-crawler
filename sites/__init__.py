@@ -14,6 +14,12 @@ class SupportedSites(Enum):
     CAN_KAO_XIAO_XI = 1
 
 
+website_names = {
+    SupportedSites.DONG_FANG: '东方网',
+    SupportedSites.CAN_KAO_XIAO_XI: '参考消息网',
+}
+
+
 table = {
     SupportedSites.DONG_FANG: dong_fang.get_news_since,
     SupportedSites.CAN_KAO_XIAO_XI: can_kao_xiao_xi.get_news_since,
