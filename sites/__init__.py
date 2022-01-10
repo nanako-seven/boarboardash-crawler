@@ -2,6 +2,7 @@ from enum import Enum
 from .site_models import News
 from selenium import webdriver
 from datetime import datetime
+from typing import List
 from . import dong_fang
 from . import can_kao_xiao_xi
 # from . import renmin
@@ -26,5 +27,5 @@ table = {
 }
 
 
-def get_news_since(site: SupportedSites, driver: webdriver.Firefox, time: datetime) -> list[News]:
+def get_news_since(site: SupportedSites, driver: webdriver.Firefox, time: datetime) -> List[News]:
     return table[site](driver, time)

@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, List
 from bs4.element import Tag
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -15,7 +15,7 @@ def get_page_source(page) -> str:
     return r.text
 
 
-def analyze_html(html: str) -> list[Any]:
+def analyze_html(html: str) -> List[Any]:
     soup = BeautifulSoup(html, 'lxml')
     ans = []
     categories = ['全部', '中国', '国际', '台海', '军事', '财经', '科技健康', '观点·专栏']
@@ -41,7 +41,7 @@ def convert(s: str) -> datetime:
     return datetime.strptime(s, '%Y-%m-%d %H:%M:%S')
 
 
-def get_news_since(driver: webdriver.Firefox, time: datetime) -> list[News]:
+def get_news_since(driver: webdriver.Firefox, time: datetime) -> List[News]:
     html = get_page_source(1)
     news = analyze_html(html)
     i = 0

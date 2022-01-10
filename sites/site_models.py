@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
+from typing import List
 
 
 class News(BaseModel):
@@ -10,4 +11,4 @@ class News(BaseModel):
     raw: bytes  # 原始HTML数据
     encoding: str  # HTML编码
     content: str  # 新闻正文内容
-    image_urls: list[str]  # 新闻正文中所有图片的URL
+    image_urls: List[str]  # 新闻正文中所有图片的URL

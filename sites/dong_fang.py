@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, List
 from bs4.element import Tag
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -21,7 +21,7 @@ def get_html(driver: webdriver.Firefox, page: int) -> str:
     return el.get_attribute('innerHTML')
 
 
-def analyze_html(html: str) -> list[Any]:
+def analyze_html(html: str) -> List[Any]:
     soup = BeautifulSoup(html, 'lxml')
     ans = []
     for li in soup.find_all('li'):
@@ -51,7 +51,7 @@ def get_tag(s: str) -> str:
     return s[a:b]
 
 
-def get_news_since(driver: webdriver.Firefox, time: datetime) -> list[News]:
+def get_news_since(driver: webdriver.Firefox, time: datetime) -> List[News]:
     html = get_html(driver, 1)
     news = analyze_html(html)
     i = 0
