@@ -11,6 +11,9 @@ from . import can_kao_xiao_xi
 
 
 class SupportedSites(Enum):
+    '''
+    支持的所有网站
+    '''
     DONG_FANG = 0
     CAN_KAO_XIAO_XI = 1
 
@@ -28,4 +31,7 @@ table = {
 
 
 def get_news_since(site: SupportedSites, driver: webdriver.Firefox, time: datetime) -> List[News]:
+    '''
+    利用浏览器driver，从site中提取从time之后的新闻
+    '''
     return table[site](driver, time)

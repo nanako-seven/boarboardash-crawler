@@ -5,6 +5,9 @@ from config import signature_key
 
 
 def sha3(s: str) -> str:
+    '''
+    获得s的sha3摘要（十六进制表示）
+    '''
     b = s.encode()
     return hashlib.sha3_512(b).hexdigest()
 

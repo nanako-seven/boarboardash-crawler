@@ -14,7 +14,9 @@ driver = webdriver.Edge()
 
 
 async def crawl():
-
+    '''
+    爬取一波网页，并更新数据库中的信息
+    '''
     news_hooks = []
     image_hooks = []
     for w in sites.SupportedSites:
